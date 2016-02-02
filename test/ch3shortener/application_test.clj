@@ -1,7 +1,8 @@
 (ns ch3shortener.application-test
   (:require [ch3shortener.application :refer :all]
             [clojure.test :refer :all]
-            [ring.mock.request :as mock]))
+            [ring.mock.request :as mock]
+            [clojure.string :as str]))
 
 (deftest test-app
   (let [url "http://example.com/post"
@@ -45,3 +46,22 @@
       (let [response (app (mock/request :put path url))]
         (testing "the response is a 200"
           (is (= 200 (:status response))))))))
+
+(deftest delete-link
+  (let [id "thing"
+        url "http://example.com/thing"
+        path (str "/links/" id)]
+
+    (testing "when the link doesn't exist"
+      (let [response (app (mock/request :delete path))]
+        (testing "the result is a 204"
+          (is (= 204 (:status response))))))
+
+    (testing "when the link does exist"
+      (app (mock/request :post path url))
+      (let [response (app (mock/request :delete path))]
+        (testing "the response is still a 204"
+          (is (= 204 (:status response)))
+
+          (testing "and the link is now a 404"
+            (is (= 404 (:status (app (mock/request :get path)))))))))))
