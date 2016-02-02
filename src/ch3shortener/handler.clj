@@ -1,6 +1,7 @@
 (ns ch3shortener.handler
   (:require [ring.util.request :as req]
             [ring.util.response :as res]
+            [ring.middleware.json :refer [wrap-json-response]] ;; new line
             [ch3shortener.storage :as st]))
 
 (defn get-link
@@ -29,3 +30,10 @@
   (st/delete-link stg id)
   (-> (res/response "")
     (res/status 204)))
+
+(defn list-links
+  "Returns a handler! Call the handler if you want a response."
+  [stg]
+  (wrap-json-response
+   (fn [_] ;; we don't need the request at this point
+     (res/response (st/list-links stg)))))
