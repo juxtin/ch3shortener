@@ -2,6 +2,7 @@
   (:require [ch3shortener.application :refer :all]
             [clojure.test :refer :all]
             [ring.mock.request :as mock]
+            [cheshire.core :as json] ;; add this
             [clojure.string :as str]))
 
 (deftest test-app
@@ -65,3 +66,20 @@
 
           (testing "and the link is now a 404"
             (is (= 404 (:status (app (mock/request :get path)))))))))))
+
+(deftest list-links
+  ;; first make sure there are some links to list
+  (let [id-urls {"a" "http://example.com/a"
+                 "b" "http://example.com/b"
+                 "c" "http://example.com/c"}]
+    (doseq [[id url] id-urls]
+      (app (mock/request :post (str "/links/" id) url)))
+
+    (let [response (app (mock/request :get "/links"))
+          parsed-body (json/decode (:body response))]
+      (testing "the response is a 200"
+        (is (= 200 (:status response)))
+
+        (testing "and the decoded body contains all of the links we added"
+          (is (= id-urls
+                 (select-keys parsed-body ["a" "b" "c"]))))))))
