@@ -24,3 +24,8 @@
     (-> (format "There is no link with the id %s." id)
       res/not-found)))
 
+(defn delete-link
+  [stg id]
+  (st/delete-link stg id)
+  (-> (res/response "")
+    (res/status 204)))

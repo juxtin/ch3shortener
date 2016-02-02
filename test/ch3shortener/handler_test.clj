@@ -71,3 +71,21 @@
 
           (testing "and the link is actually updated"
             (is (= new-url (st/get-link stg "test")))))))))
+
+(deftest delete-link-test
+  (let [stg (in-memory-storage)
+        id "test"
+        url "http://example.com/foo"]
+    (testing "when the link exists"
+      (st/create-link stg id url)
+      (let [response (delete-link stg id)]
+        (testing "the response is a 204"
+          (is (= 204 (:status response))))
+
+        (testing "the link is deleted"
+          (is (nil? (st/get-link stg id))))))
+
+    (testing "when the link does not exist"
+      (let [response (delete-link stg "bogus")]
+        (testing "the response is still 204"
+          (is (= 204 (:status response))))))))
