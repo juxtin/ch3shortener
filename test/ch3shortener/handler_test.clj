@@ -24,3 +24,25 @@
       (let [response (get-link stg "bogus")]
         (testing "the result is a 404"
           (is (= 404 (:status response))))))))
+
+(deftest create-link-test
+  (let [stg (in-memory-storage)
+        url "http://example.com"
+        request (-> (mock/request :post "/links/test" url)
+                  ;; since we haven't added middleware yet
+                  (update :body slurp))]
+    (testing "when the ID does not exist"
+      (let [response (create-link stg "test" request)]
+        (testing "the result is a 200"
+          (is (= 200 (:status response)))
+
+          (testing "with the expected body"
+            (is (= "/links/test" (:body response))))
+
+          (testing "and the link is actually created"
+            (is (= url (st/get-link stg "test")))))))
+
+    (testing "when the ID does exist"
+      (let [response (create-link stg "test" request)]
+        (testing "the result is a 422"
+          (is (= 422 (:status response))))))))
