@@ -6,9 +6,7 @@
 
 (defn shortener-routes
   [stg]
-  (routes
-   (route/not-found "Not Found")))
-
-(defroutes app-routes
-  (GET "/" [] "Hello World")
-  (route/not-found "Not Found"))
+  (-> (routes
+       (POST "/links/:id" [id :as request] (handler/create-link stg id request))
+       (route/not-found "Not Found"))
+    (wrap-routes mw/wrap-slurp-body)))
