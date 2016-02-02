@@ -16,3 +16,11 @@
     (-> (format "The id %s is already in use." id)
       res/response
       (res/status 422))))
+
+(defn update-link
+  [stg id {url :body}]
+  (if (st/update-link stg id url)
+    (res/response (str "/links/" id))
+    (-> (format "There is no link with the id %s." id)
+      res/not-found)))
+

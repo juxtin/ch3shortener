@@ -46,3 +46,28 @@
       (let [response (create-link stg "test" request)]
         (testing "the result is a 422"
           (is (= 422 (:status response))))))))
+
+(deftest update-link-test
+  (let [stg (in-memory-storage)
+        url "http://example.com"
+        request (-> (mock/request :put "/links/test" url)
+                  ;; since we haven't added middleware yet
+                  (update :body slurp))]
+    (testing "when the ID does not exist"
+      (let [response (update-link stg "test" request)]
+        (testing "the result is a 404"
+          (is (= 404 (:status response))))))
+
+    (testing "when the ID does exist"
+      (st/create-link stg "test" url)
+      (let [new-url "http://example.gov"
+            request (assoc request :body new-url)
+            response (update-link stg "test" request)]
+        (testing "the result is a 200"
+          (is (= 200 (:status response)))
+
+          (testing "with the expected body"
+            (is (= "/links/test" (:body response))))
+
+          (testing "and the link is actually updated"
+            (is (= new-url (st/get-link stg "test")))))))))
