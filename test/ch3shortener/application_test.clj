@@ -29,3 +29,19 @@
   (testing "not-found route"
     (let [response (app (mock/request :get "/invalid"))]
       (is (= (:status response) 404)))))
+
+(deftest link-updating
+  (let [id "put"
+        url "http://example.com/putTest"
+        path (str "/links/" id)]
+
+    (testing "when the link does not exist"
+      (let [response (app (mock/request :put path url))]
+        (testing "the response is a 404"
+          (is (= 404 (:status response))))))
+
+    (testing "when the link does exist"
+      (app (mock/request :post path "http://example.post"))
+      (let [response (app (mock/request :put path url))]
+        (testing "the response is a 200"
+          (is (= 200 (:status response))))))))
