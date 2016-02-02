@@ -8,5 +8,6 @@
   [stg]
   (-> (routes
        (POST "/links/:id" [id :as request] (handler/create-link stg id request))
+       (GET "/links/:id" [id] (handler/get-link stg id))
        (route/not-found "Not Found"))
     (wrap-routes mw/wrap-slurp-body)))
